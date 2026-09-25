@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && tsc --declaration --emitDeclarationOnly --noEmit false --outDir dist && node -e \"require('fs').copyFileSync('demo.html', 'dist/demo.html')\"",
+    "build": "tsc && vite build && tsc --declaration --emitDeclarationOnly --noEmit false --outDir dist && node -e \"require('fs').copyFileSync('index.html', 'dist/index.html'); require('fs').copyFileSync('demo.html', 'dist/demo.html')\"",
     "preview": "vite preview"
   },
   "dependencies": {

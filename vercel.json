@@ -26,10 +26,6 @@
     {
       "source": "/checkout-widget.js",
       "destination": "/checkout-widget.umd.js"
-    },
-    {
-      "source": "/",
-      "destination": "/demo.html"
     }
   ]
 }
