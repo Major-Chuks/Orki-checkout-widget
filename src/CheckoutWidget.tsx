@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckoutConfig, ChargeApiResponse } from './types';
 import CheckoutModal from './CheckoutModal';
 import './CheckoutWidget.css';
+import { ensureStylesInjected } from './injectStyles';
 
 interface InternalWidgetProps extends CheckoutConfig {
   autoOpen?: boolean;
@@ -85,6 +86,7 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
   autoOpen = false,
   onModalClose,
 }) => {
+  ensureStylesInjected();
   const [isLoading, setIsLoading] = useState(false);
   const [activeCheckoutUrl, setActiveCheckoutUrl] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
