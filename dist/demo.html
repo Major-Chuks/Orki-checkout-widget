@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orki Checkout Widget — Integration Demo</title>
+  <link rel="stylesheet" href="./dist/style.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 15px;
+      color: #64748b;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 360px));
+      gap: 24px;
+      width: 100%;
+      max-width: 780px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+    .card h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+    .card p {
+      font-size: 13.5px;
+      color: #64748b;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .button-wrap {
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Orki Checkout Widget Demo</h1>
+    <p>Test live charge creation with modal iframe and new-tab modes</p>
+  </div>
+
+  <div class="grid">
+    <!-- Card 1: Default Iframe Modal -->
+    <div class="card">
+      <h2>Modal Overlay (Default)</h2>
+      <p>Opens the hosted checkout page in an in-page responsive iframe modal overlay.</p>
+      <div class="button-wrap">
+        <div id="btnModal"></div>
+      </div>
+    </div>
+
+    <!-- Card 2: New Tab Mode -->
+    <div class="card">
+      <h2>New Browser Tab</h2>
+      <p>Creates the charge and opens the checkout link in a new browser tab.</p>
+      <div class="button-wrap">
+        <div id="btnNewTab"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Widget UMD bundle -->
+  <script src="./dist/checkout-widget.umd.js"></script>
+  <script>
+    // Sample test paylink ID
+    const SAMPLE_PAYLINK_ID = '01m39bs3pp9r699d5m1fkyffvj';
+
+    // 1. Modal Widget Instance
+    window.orkiCheckout('btnModal', {
+      paylinkId: SAMPLE_PAYLINK_ID,
+      amount: '5.00',
+      apiUrl: 'https://api.orki.io',
+      primaryColor: '#783FE4',
+      buttonTextColor: '#FFFFFF',
+      buttonText: 'Pay $5.00 with Orki',
+      display: 'iframe',
+      redirectUrl: 'https://example.com/order-success',
+      metadata: {
+        orderId: 'DEMO-1001',
+        customerReference: 'cust-demo-1'
+      },
+      onStartPayment: () => console.log('Starting payment...'),
+      onChargeCreated: (charge) => console.log('Charge created successfully:', charge),
+      onError: (err) => console.error('Payment error:', err),
+      onClose: () => console.log('Modal closed by customer'),
+    });
+
+    // 2. New Tab Widget Instance
+    window.orkiCheckout('btnNewTab', {
+      paylinkId: SAMPLE_PAYLINK_ID,
+      amount: '5.00',
+      apiUrl: 'https://api.orki.io',
+      primaryColor: '#0ea5e9',
+      buttonTextColor: '#FFFFFF',
+      buttonText: 'Pay in New Tab',
+      display: 'new-tab',
+      redirectUrl: 'https://example.com/order-success',
+      metadata: {
+        orderId: 'DEMO-1002',
+        customerReference: 'cust-demo-2'
+      },
+      onStartPayment: () => console.log('Starting payment in new tab...'),
+      onChargeCreated: (charge) => console.log('Charge created:', charge),
+      onError: (err) => console.error('Payment error:', err),
+    });
+  </script>
+</body>
+</html>
