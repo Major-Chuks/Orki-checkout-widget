@@ -4,6 +4,20 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version type to bump'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 permissions:
   contents: write
@@ -32,9 +46,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Bump patch version
+      - name: Bump version
         run: |
-          npm version patch -m "chore(release): %s [skip ci]"
+          VERSION_TYPE="${{ inputs.version_type || 'patch' }}"
+          npm version $VERSION_TYPE -m "chore(release): %s [skip ci]"
 
       - name: Build bundle
         run: npm run build
