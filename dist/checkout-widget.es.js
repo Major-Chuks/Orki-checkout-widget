@@ -1,33 +1,33 @@
-import { jsx as o, jsxs as c, Fragment as R } from "react/jsx-runtime";
-import { createRoot as z } from "react-dom/client";
-import A, { useState as k, useEffect as _ } from "react";
-const E = ({
+import { jsx as o, jsxs as l, Fragment as K } from "react/jsx-runtime";
+import { createRoot as $ } from "react-dom/client";
+import { useState as v, useEffect as k, useRef as H } from "react";
+const P = ({
   checkoutUrl: t,
   onClose: e,
   onSuccess: i,
-  onError: a
+  onError: r
 }) => {
-  const [d, f] = k(!0);
-  return _(() => {
-    const s = (p) => {
-      p.key === "Escape" && e();
+  const [c, N] = v(!0);
+  return k(() => {
+    const a = (m) => {
+      m.key === "Escape" && e();
     };
-    return window.addEventListener("keydown", s), () => window.removeEventListener("keydown", s);
-  }, [e]), _(() => {
-    const s = document.body.style.overflow;
+    return window.addEventListener("keydown", a), () => window.removeEventListener("keydown", a);
+  }, [e]), k(() => {
+    const a = document.body.style.overflow;
     return document.body.style.overflow = "hidden", () => {
-      document.body.style.overflow = s;
+      document.body.style.overflow = a;
     };
-  }, []), _(() => {
-    const s = (p) => {
-      const r = p.data;
-      !r || typeof r != "object" || (r.type === "ORKI_PAYMENT_SUCCESS" || r.event === "payment.success" ? (i == null || i(r.payload || r), e()) : r.type === "ORKI_PAYMENT_ERROR" || r.event === "payment.error" ? a == null || a(r.payload || r) : (r.type === "ORKI_PAYMENT_CANCEL" || r.type === "ORKI_CLOSE") && e());
+  }, []), k(() => {
+    const a = (m) => {
+      const n = m.data;
+      !n || typeof n != "object" || (n.type === "ORKI_PAYMENT_SUCCESS" || n.event === "payment.success" ? (i == null || i(n.payload || n), e()) : n.type === "ORKI_PAYMENT_ERROR" || n.event === "payment.error" ? r == null || r(n.payload || n) : (n.type === "ORKI_PAYMENT_CANCEL" || n.type === "ORKI_CLOSE") && e());
     };
-    return window.addEventListener("message", s), () => window.removeEventListener("message", s);
-  }, [e, i, a]), /* @__PURE__ */ o("div", { className: "orki-modal-backdrop", onClick: e, role: "dialog", "aria-modal": "true", children: /* @__PURE__ */ c("div", { className: "orki-modal-container", onClick: (s) => s.stopPropagation(), children: [
-    /* @__PURE__ */ c("div", { className: "orki-modal-header", children: [
-      /* @__PURE__ */ c("div", { className: "orki-modal-brand", children: [
-        /* @__PURE__ */ c(
+    return window.addEventListener("message", a), () => window.removeEventListener("message", a);
+  }, [e, i, r]), /* @__PURE__ */ o("div", { className: "orki-modal-backdrop", onClick: e, role: "dialog", "aria-modal": "true", children: /* @__PURE__ */ l("div", { className: "orki-modal-container", onClick: (a) => a.stopPropagation(), children: [
+    /* @__PURE__ */ l("div", { className: "orki-modal-header", children: [
+      /* @__PURE__ */ l("div", { className: "orki-modal-brand", children: [
+        /* @__PURE__ */ l(
           "svg",
           {
             width: "16",
@@ -57,8 +57,8 @@ const E = ({
         }
       )
     ] }),
-    /* @__PURE__ */ c("div", { className: "orki-modal-body", children: [
-      d && /* @__PURE__ */ c("div", { className: "orki-modal-loading", children: [
+    /* @__PURE__ */ l("div", { className: "orki-modal-body", children: [
+      c && /* @__PURE__ */ l("div", { className: "orki-modal-loading", children: [
         /* @__PURE__ */ o("div", { className: "orki-spinner" }),
         /* @__PURE__ */ o("span", { children: "Loading secure payment..." })
       ] }),
@@ -69,12 +69,12 @@ const E = ({
           className: "orki-modal-iframe",
           title: "Orki Checkout",
           allow: "payment; camera; clipboard-write",
-          onLoad: () => f(!1)
+          onLoad: () => N(!1)
         }
       )
     ] })
   ] }) });
-}, P = `/* ─── Orki Checkout Widget Styles ────────────────────────────────────────── */
+}, V = `/* ─── Orki Checkout Widget Styles ────────────────────────────────────────── */
 
 .orki-pay-btn {
   display: inline-flex;
@@ -289,163 +289,162 @@ const E = ({
   }
 }
 `;
-function x() {
+function I() {
   if (typeof document > "u") return;
   const t = "orki-checkout-widget-styles";
   if (!document.getElementById(t)) {
     const e = document.createElement("style");
-    e.id = t, e.textContent = P, document.head.appendChild(e);
+    e.id = t, e.textContent = V, document.head.appendChild(e);
   }
 }
-typeof document < "u" && x();
-const W = !0, Y = async (t, e = "5.00", i) => {
-  await new Promise((f) => setTimeout(f, 900));
-  const a = `chg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`, d = `https://orki-payment-widget.vercel.app/pay/${a}`;
-  return {
-    msg: "Charge created successfully.",
-    data: {
-      charge_token: a,
-      paylink_id: t,
-      amount: (parseFloat(e || "5.00") || 5).toFixed(8),
-      price_denomination: "fiat",
-      price_denomination_id: "01kf0etgd9tgvw372wwkw7rzk6",
-      status: "pending",
-      amount_paid: "0.00000000",
-      chain: null,
-      tx_hash: null,
-      metadata: i || {
-        orderId: "ORD-DEMO",
-        customerReference: "cust-demo"
-      },
-      checkout_url: d,
-      expires_at: new Date(Date.now() + 30 * 60 * 1e3).toISOString(),
-      paid_at: null,
-      created_at: (/* @__PURE__ */ new Date()).toISOString()
-    },
-    success: !0,
-    code: 200
-  };
-};
-const j = ({
+typeof document < "u" && I();
+function x() {
+  return typeof crypto < "u" && typeof crypto.randomUUID == "function" ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (t) => {
+    const e = Math.random() * 16 | 0;
+    return (t === "x" ? e : e & 3 | 8).toString(16);
+  });
+}
+const Q = "https://sandbox-api.orki.io", W = ({
   paylinkId: t,
   amount: e,
   redirectUrl: i,
-  redirect_url: a,
-  metadata: d,
-  apiUrl: f = "https://api.orki.io",
-  primaryColor: s = "#783FE4",
-  buttonTextColor: p = "#FFFFFF",
-  buttonText: r = "Pay Now",
-  className: K = "",
-  style: B = {},
-  display: T = "iframe",
-  onStartPayment: g,
-  onChargeCreated: y,
-  onSuccess: O,
-  onError: l,
-  onClose: b,
-  autoOpen: w = !1,
-  onModalClose: v
+  metadata: r,
+  primaryColor: c = "#783FE4",
+  buttonTextColor: N = "#FFFFFF",
+  buttonText: a = "Pay Now",
+  className: m = "",
+  style: n = {},
+  display: Y = "iframe",
+  onStartPayment: j,
+  onChargeCreated: O,
+  onSuccess: R,
+  onError: d,
+  onClose: C,
+  autoOpen: L = !1,
+  onModalClose: _
 }) => {
-  x();
-  const [C, m] = k(!1), [u, M] = k(null), [I, N] = k(null), G = i || a, U = async () => {
-    var F;
+  I();
+  const [M, y] = v(!1), [b, S] = v(null), [F, U] = v(null), u = H(x());
+  k(() => {
+    u.current = x();
+  }, [t, e, r]);
+  const E = async () => {
+    var g;
     if (!t) {
-      const n = new Error("[OrkiCheckout] paylinkId is required");
-      console.error(n), l == null || l(n);
+      const s = new Error("[OrkiCheckout] paylinkId is required");
+      console.error(s), d == null || d(s);
       return;
     }
-    m(!0), N(null), g == null || g();
+    y(!0), U(null), j == null || j();
     try {
-      let n;
-      if (W && (console.log("[OrkiCheckout] [MOCK MODE] Simulating charge creation for paylink:", t), n = await Y(t, e, d)), !n.success || !((F = n.data) != null && F.checkout_url))
-        throw new Error(n.msg || "Invalid charge response from server");
-      y == null || y(n.data);
-      const h = n.data.checkout_url;
-      T === "new-tab" ? (window.open(h, "_blank", "noopener,noreferrer"), m(!1)) : (M(h), m(!1));
-    } catch (n) {
-      console.error("[OrkiCheckout] Failed to create charge:", n);
-      const h = n instanceof Error ? n.message : "Failed to start payment";
-      N(h), m(!1), l == null || l(n);
+      const s = `${Q}/api/v1/charges`, p = {
+        paylink_id: t
+      };
+      e && e.trim() !== "" && (p.amount = e), i && i.trim() !== "" && (p.redirect_url = i), r && typeof r == "object" && Object.keys(r).length > 0 && (p.metadata = r);
+      const w = await fetch(s, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "Idempotency-Key": u.current
+        },
+        body: JSON.stringify(p)
+      });
+      if (!w.ok) {
+        const f = await w.json().catch(() => null), G = (f == null ? void 0 : f.msg) || (f == null ? void 0 : f.message) || `Request failed with status ${w.status}`;
+        throw new Error(G);
+      }
+      const h = await w.json();
+      if (!h.success || !((g = h.data) != null && g.checkout_url))
+        throw new Error(h.msg || "Invalid charge response from server");
+      O == null || O(h.data);
+      const B = h.data.checkout_url;
+      Y === "new-tab" ? (window.open(B, "_blank", "noopener,noreferrer"), y(!1), u.current = x()) : (S(B), y(!1));
+    } catch (s) {
+      console.error("[OrkiCheckout] Failed to create charge:", s);
+      const p = s instanceof Error ? s.message : "Failed to start payment";
+      U(p), y(!1), d == null || d(s);
     }
   };
-  A.useEffect(() => {
-    w && U();
-  }, [w]);
-  const S = () => {
-    M(null), b == null || b(), v == null || v();
+  k(() => {
+    L && E();
+  }, [L]);
+  const z = () => {
+    S(null), u.current = x(), C == null || C(), _ == null || _();
+  }, A = (g) => {
+    u.current = x(), R == null || R(g);
   };
-  if (w)
-    return u ? /* @__PURE__ */ o(
-      E,
+  if (L)
+    return b ? /* @__PURE__ */ o(
+      P,
       {
-        checkoutUrl: u,
-        onClose: S,
-        onSuccess: O,
-        onError: l
+        checkoutUrl: b,
+        onClose: z,
+        onSuccess: A,
+        onError: d
       }
     ) : null;
-  const $ = r || (e ? `Pay $${e}` : "Pay Now");
-  return /* @__PURE__ */ c(R, { children: [
+  const q = a || (e ? `Pay $${e}` : "Pay Now");
+  return /* @__PURE__ */ l(K, { children: [
     /* @__PURE__ */ o(
       "button",
       {
         type: "button",
-        className: `orki-pay-btn ${K}`,
+        className: `orki-pay-btn ${m}`,
         style: {
-          backgroundColor: s,
-          color: p,
-          ...B
+          backgroundColor: c,
+          color: N,
+          ...n
         },
-        onClick: U,
-        disabled: C,
-        children: C ? /* @__PURE__ */ c(R, { children: [
+        onClick: E,
+        disabled: M,
+        children: M ? /* @__PURE__ */ l(K, { children: [
           /* @__PURE__ */ o("span", { className: "orki-spinner" }),
           /* @__PURE__ */ o("span", { children: "Processing..." })
-        ] }) : $
+        ] }) : q
       }
     ),
-    I && /* @__PURE__ */ o("div", { className: "orki-inline-error", title: I, children: I }),
-    u && /* @__PURE__ */ o(
-      E,
+    F && /* @__PURE__ */ o("div", { className: "orki-inline-error", title: F, children: F }),
+    b && /* @__PURE__ */ o(
+      P,
       {
-        checkoutUrl: u,
-        onClose: S,
-        onSuccess: O,
-        onError: l
+        checkoutUrl: b,
+        onClose: z,
+        onSuccess: A,
+        onError: d
       }
     )
   ] });
 };
-function L(t, e) {
-  x();
+function T(t, e) {
+  I();
   const i = typeof t == "string" ? document.getElementById(t) : t;
   if (!i) {
     console.error("[OrkiCheckout] Mount target element not found:", t);
     return;
   }
-  z(i).render(/* @__PURE__ */ o(j, { ...e }));
+  $(i).render(/* @__PURE__ */ o(W, { ...e }));
 }
-function q(t) {
-  x();
+function X(t) {
+  I();
   const e = document.createElement("div");
   e.id = `orki-checkout-portal-${Date.now()}`, document.body.appendChild(e);
-  const i = z(e), a = () => {
-    var d;
-    (d = t.onClose) == null || d.call(t), setTimeout(() => {
+  const i = $(e), r = () => {
+    var c;
+    (c = t.onClose) == null || c.call(t), setTimeout(() => {
       i.unmount(), e.remove();
     }, 100);
   };
-  i.render(/* @__PURE__ */ o(j, { ...t, autoOpen: !0, onModalClose: a }));
+  i.render(/* @__PURE__ */ o(W, { ...t, autoOpen: !0, onModalClose: r }));
 }
-const D = Object.assign(L, {
-  open: q,
-  mount: L
+const D = Object.assign(T, {
+  open: X,
+  mount: T
 });
 typeof window < "u" && (window.orkiCheckout = D, window.checkoutWidget = D);
 export {
-  E as CheckoutModal,
-  j as CheckoutWidget,
+  P as CheckoutModal,
+  W as CheckoutWidget,
   D as default,
   D as orkiCheckout
 };

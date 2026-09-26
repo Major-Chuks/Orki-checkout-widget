@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { CheckoutConfig, ChargeApiResponse } from './types';
 import CheckoutModal from './CheckoutModal';
 import './CheckoutWidget.css';
@@ -8,50 +8,6 @@ interface InternalWidgetProps extends CheckoutConfig {
   autoOpen?: boolean;
   onModalClose?: () => void;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK MODE TOGGLE
-// Set USE_MOCK to false when the backend /api/v1/charges endpoint goes live.
-// ─────────────────────────────────────────────────────────────────────────────
-const USE_MOCK = true;
-
-// Simulate backend charge creation with realistic latency
-const simulateMockCharge = async (
-  paylinkId: string,
-  amount: string = '5.00',
-  metadata?: Record<string, unknown>
-): Promise<ChargeApiResponse> => {
-  // Simulate 900ms realistic network latency
-  await new Promise((resolve) => setTimeout(resolve, 900));
-
-  const chargeToken = `chg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-  const checkoutUrl = `https://orki-payment-widget.vercel.app/pay/${chargeToken}`;
-
-  return {
-    msg: 'Charge created successfully.',
-    data: {
-      charge_token: chargeToken,
-      paylink_id: paylinkId,
-      amount: (parseFloat(amount || '5.00') || 5).toFixed(8),
-      price_denomination: 'fiat',
-      price_denomination_id: '01kf0etgd9tgvw372wwkw7rzk6',
-      status: 'pending',
-      amount_paid: '0.00000000',
-      chain: null,
-      tx_hash: null,
-      metadata: metadata || {
-        orderId: 'ORD-DEMO',
-        customerReference: 'cust-demo'
-      },
-      checkout_url: checkoutUrl,
-      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-      paid_at: null,
-      created_at: new Date().toISOString(),
-    },
-    success: true,
-    code: 200,
-  };
-};
 
 // Generate RFC4122 v4 UUID
 function generateIdempotencyKey(): string {
@@ -65,13 +21,13 @@ function generateIdempotencyKey(): string {
   });
 }
 
+const API_BASE_URL = 'https://sandbox-api.orki.io';
+
 export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
   paylinkId,
   amount,
   redirectUrl,
-  redirect_url,
   metadata,
-  apiUrl = 'https://api.orki.io',
   primaryColor = '#783FE4',
   buttonTextColor = '#FFFFFF',
   buttonText = 'Pay Now',
@@ -91,7 +47,13 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
   const [activeCheckoutUrl, setActiveCheckoutUrl] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const finalRedirectUrl = redirectUrl || redirect_url;
+  // Persistent idempotency key across retries for the current checkout session
+  const idempotencyKeyRef = useRef<string>(generateIdempotencyKey());
+
+  // Reset idempotency key when order parameters change (new purchase intent)
+  useEffect(() => {
+    idempotencyKeyRef.current = generateIdempotencyKey();
+  }, [paylinkId, amount, metadata]);
 
   const handleInitiatePayment = async () => {
     if (!paylinkId) {
@@ -106,50 +68,41 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
     onStartPayment?.();
 
     try {
-      let resData: ChargeApiResponse;
+      const endpoint = `${API_BASE_URL}/api/v1/charges`;
 
-      if (USE_MOCK) {
-        console.log('[OrkiCheckout] [MOCK MODE] Simulating charge creation for paylink:', paylinkId);
-        resData = await simulateMockCharge(paylinkId, amount, metadata);
-      } else {
-        // Live API call (executes when USE_MOCK is set to false)
-        const idempotencyKey = generateIdempotencyKey();
-        const endpoint = `${apiUrl.replace(/\/+$/, '')}/api/v1/charges`;
+      const payload: Record<string, unknown> = {
+        paylink_id: paylinkId,
+      };
 
-        const payload: Record<string, unknown> = {
-          paylink_id: paylinkId,
-        };
-
-        if (amount && amount.trim() !== '') {
-          payload.amount = amount;
-        }
-
-        if (finalRedirectUrl && finalRedirectUrl.trim() !== '') {
-          payload.redirect_url = finalRedirectUrl;
-        }
-
-        if (metadata && typeof metadata === 'object' && Object.keys(metadata).length > 0) {
-          payload.metadata = metadata;
-        }
-
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'Idempotency-Key': idempotencyKey,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          const errJson = await response.json().catch(() => null);
-          const message = errJson?.msg || errJson?.message || `Request failed with status ${response.status}`;
-          throw new Error(message);
-        }
-
-        resData = await response.json();
+      if (amount && amount.trim() !== '') {
+        payload.amount = amount;
       }
+
+      if (redirectUrl && redirectUrl.trim() !== '') {
+        payload.redirect_url = redirectUrl;
+      }
+
+      if (metadata && typeof metadata === 'object' && Object.keys(metadata).length > 0) {
+        payload.metadata = metadata;
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'Idempotency-Key': idempotencyKeyRef.current,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => null);
+        const message = errJson?.msg || errJson?.message || `Request failed with status ${response.status}`;
+        throw new Error(message);
+      }
+
+      const resData: ChargeApiResponse = await response.json();
 
       if (!resData.success || !resData.data?.checkout_url) {
         throw new Error(resData.msg || 'Invalid charge response from server');
@@ -162,12 +115,15 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
       if (display === 'new-tab') {
         window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
         setIsLoading(false);
+        // Reset key for future orders after opening in new tab
+        idempotencyKeyRef.current = generateIdempotencyKey();
       } else {
         // default iframe modal
         setActiveCheckoutUrl(checkoutUrl);
         setIsLoading(false);
       }
     } catch (err: unknown) {
+      // NOTE: We deliberately do NOT rotate the idempotency key here so retry clicks reuse the same key!
       console.error('[OrkiCheckout] Failed to create charge:', err);
       const message = err instanceof Error ? err.message : 'Failed to start payment';
       setErrorMsg(message);
@@ -177,7 +133,7 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
   };
 
   // If autoOpen is set (e.g. programmatic window.orkiCheckout.open()), trigger immediately
-  React.useEffect(() => {
+  useEffect(() => {
     if (autoOpen) {
       handleInitiatePayment();
     }
@@ -185,8 +141,16 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
 
   const handleCloseModal = () => {
     setActiveCheckoutUrl(null);
+    // User aborted the checkout session; generate a fresh key for next time
+    idempotencyKeyRef.current = generateIdempotencyKey();
     onClose?.();
     onModalClose?.();
+  };
+
+  const handlePaymentSuccess = (event: unknown) => {
+    // Payment complete; rotate key for future orders
+    idempotencyKeyRef.current = generateIdempotencyKey();
+    onSuccess?.(event);
   };
 
   // If autoOpen is active, only render the modal (no button)
@@ -195,7 +159,7 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
       <CheckoutModal
         checkoutUrl={activeCheckoutUrl}
         onClose={handleCloseModal}
-        onSuccess={onSuccess}
+        onSuccess={handlePaymentSuccess}
         onError={onError}
       />
     ) : null;
@@ -236,7 +200,7 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
         <CheckoutModal
           checkoutUrl={activeCheckoutUrl}
           onClose={handleCloseModal}
-          onSuccess={onSuccess}
+          onSuccess={handlePaymentSuccess}
           onError={onError}
         />
       )}

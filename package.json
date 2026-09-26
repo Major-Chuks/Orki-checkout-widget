@@ -11,7 +11,7 @@
     "dev": "vite",
     "build:lib": "vite build",
     "build:standalone": "vite build --mode standalone",
-    "build": "tsc && vite build && vite build --mode standalone && tsc --declaration --emitDeclarationOnly --noEmit false --outDir dist && node -e \"require('fs').copyFileSync('index.html', 'dist/index.html'); require('fs').copyFileSync('demo.html', 'dist/demo.html')\"",
+    "build": "tsc && vite build && vite build --mode standalone && tsc --declaration --emitDeclarationOnly --noEmit false --outDir dist && node -e \"require('fs').copyFileSync('index.html', 'dist/index.html')\"",
     "preview": "vite preview"
   },
   "peerDependencies": {

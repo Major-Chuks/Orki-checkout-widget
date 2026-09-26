@@ -43,13 +43,9 @@ export interface CheckoutConfig {
 
   /** Redirect URL after payment completion on hosted checkout */
   redirectUrl?: string;
-  redirect_url?: string;
 
   /** Custom merchant metadata attached to the charge */
   metadata?: CheckoutMetadata;
-
-  /** API Base URL (defaults to "https://api.orki.io") */
-  apiUrl?: string;
 
   /** Visual Styling */
   primaryColor?: string;       // Button background color (default #783FE4)
