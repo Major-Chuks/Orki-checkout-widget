@@ -1,5 +1,5 @@
 import React from 'react';
-export type DisplayMode = 'iframe' | 'new-tab';
+export type DisplayMode = 'iframe' | 'popup' | 'new-tab';
 export interface CheckoutMetadata {
     orderId?: string;
     customerReference?: string;

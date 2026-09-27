@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type DisplayMode = 'iframe' | 'new-tab';
+export type DisplayMode = 'iframe' | 'popup' | 'new-tab';
 
 export interface CheckoutMetadata {
   orderId?: string;
@@ -55,7 +55,7 @@ export interface CheckoutConfig {
   style?: React.CSSProperties; // Inline styles
 
   /** Display Behavior */
-  display?: DisplayMode;       // 'iframe' (default) or 'new-tab'
+  display?: DisplayMode;       // 'new-tab' (default) | 'iframe' | 'popup'
 
   /** Callbacks (Optional) */
   onStartPayment?: () => void;

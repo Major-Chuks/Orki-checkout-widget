@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { CheckoutConfig, ChargeApiResponse } from './types';
 import CheckoutModal from './CheckoutModal';
+import { ErrorAlertIcon, ErrorCloseIcon } from './icons';
 import './CheckoutWidget.css';
 import { ensureStylesInjected } from './injectStyles';
 
@@ -33,7 +34,7 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
   buttonText = 'Pay Now',
   className = '',
   style = {},
-  display = 'iframe',
+  display = 'new-tab',
   onStartPayment,
   onChargeCreated,
   onSuccess,
@@ -49,6 +50,7 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
 
   // Persistent idempotency key across retries for the current checkout session
   const idempotencyKeyRef = useRef<string>(generateIdempotencyKey());
+  const popupRef = useRef<Window | null>(null);
 
   // Reset idempotency key when order parameters change (new purchase intent)
   useEffect(() => {
@@ -117,6 +119,37 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
         setIsLoading(false);
         // Reset key for future orders after opening in new tab
         idempotencyKeyRef.current = generateIdempotencyKey();
+      } else if (display === 'popup') {
+        const width = 460;
+        const height = 720;
+        const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - width) / 2));
+        const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - height) / 2));
+
+        const popup = window.open(
+          checkoutUrl,
+          'OrkiCheckout',
+          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+
+        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+          // Fallback to new-tab if browser blocked popup window
+          window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+        } else {
+          popupRef.current = popup;
+          popup.focus();
+
+          const checkClosedInterval = setInterval(() => {
+            if (popup.closed) {
+              clearInterval(checkClosedInterval);
+              popupRef.current = null;
+              onClose?.();
+              onModalClose?.();
+            }
+          }, 1000);
+        }
+
+        setIsLoading(false);
+        idempotencyKeyRef.current = generateIdempotencyKey();
       } else {
         // default iframe modal
         setActiveCheckoutUrl(checkoutUrl);
@@ -139,19 +172,46 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
     }
   }, [autoOpen]);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setActiveCheckoutUrl(null);
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close();
+      popupRef.current = null;
+    }
     // User aborted the checkout session; generate a fresh key for next time
     idempotencyKeyRef.current = generateIdempotencyKey();
     onClose?.();
     onModalClose?.();
-  };
+  }, [onClose, onModalClose]);
 
-  const handlePaymentSuccess = (event: unknown) => {
+  const handlePaymentSuccess = useCallback((event: unknown) => {
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close();
+      popupRef.current = null;
+    }
     // Payment complete; rotate key for future orders
     idempotencyKeyRef.current = generateIdempotencyKey();
     onSuccess?.(event);
-  };
+  }, [onSuccess]);
+
+  // Listen for postMessage from hosted checkout page (supports popup postMessage)
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const data = event.data;
+      if (!data || typeof data !== 'object') return;
+
+      if (data.type === 'ORKI_PAYMENT_SUCCESS' || data.event === 'payment.success') {
+        handlePaymentSuccess(data.payload || data);
+      } else if (data.type === 'ORKI_PAYMENT_ERROR' || data.event === 'payment.error') {
+        onError?.(data.payload || data);
+      } else if (data.type === 'ORKI_PAYMENT_CANCEL' || data.type === 'ORKI_CLOSE') {
+        handleCloseModal();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [handlePaymentSuccess, handleCloseModal, onError]);
 
   // If autoOpen is active, only render the modal (no button)
   if (autoOpen) {
@@ -168,7 +228,7 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
   const label = buttonText || (amount ? `Pay $${amount}` : 'Pay Now');
 
   return (
-    <>
+    <div className="orki-checkout-container">
       <button
         type="button"
         className={`orki-pay-btn ${className}`}
@@ -191,8 +251,17 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
       </button>
 
       {errorMsg && (
-        <div className="orki-inline-error" title={errorMsg}>
-          {errorMsg}
+        <div className="orki-inline-error" role="alert">
+          <ErrorAlertIcon className="orki-error-icon" aria-hidden="true" />
+          <span className="orki-error-text">{errorMsg}</span>
+          <button
+            type="button"
+            className="orki-error-dismiss"
+            onClick={() => setErrorMsg(null)}
+            aria-label="Dismiss error"
+          >
+            <ErrorCloseIcon className="orki-error-close-icon" aria-hidden="true" />
+          </button>
         </div>
       )}
 
@@ -204,7 +273,7 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
           onError={onError}
         />
       )}
-    </>
+    </div>
   );
 };
 
