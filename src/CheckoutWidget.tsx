@@ -48,6 +48,7 @@ export const CheckoutWidget: React.FC<CheckoutWidgetProps> = ({
   // Persistent idempotency key across retries for the current checkout session
   const idempotencyKeyRef = useRef<string>(generateIdempotencyKey());
   const popupRef = useRef<Window | null>(null);
+  const hasSucceededRef = useRef<boolean>(false);
 
   // Reset idempotency key when order parameters change (new purchase intent)
   useEffect(() => {
@@ -62,6 +63,7 @@ export const CheckoutWidget: React.FC<CheckoutWidgetProps> = ({
       return;
     }
 
+    hasSucceededRef.current = false;
     setIsLoading(true);
     setErrorMsg(null);
     onStartPayment?.();
@@ -112,7 +114,22 @@ export const CheckoutWidget: React.FC<CheckoutWidgetProps> = ({
       const checkoutUrl = resData.data.checkout_url;
 
       if (display === 'new-tab') {
-        window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+        const newTab = window.open(checkoutUrl, '_blank');
+        if (newTab) {
+          popupRef.current = newTab;
+          const checkClosedInterval = setInterval(() => {
+            if (newTab.closed) {
+              clearInterval(checkClosedInterval);
+              if (popupRef.current === newTab) {
+                popupRef.current = null;
+              }
+              if (!hasSucceededRef.current) {
+                onClose?.();
+                onModalClose?.();
+              }
+            }
+          }, 1000);
+        }
         setIsLoading(false);
         // Reset key for future orders after opening in new tab
         idempotencyKeyRef.current = generateIdempotencyKey();
@@ -130,7 +147,22 @@ export const CheckoutWidget: React.FC<CheckoutWidgetProps> = ({
 
         if (!popup || popup.closed || typeof popup.closed === 'undefined') {
           // Fallback to new-tab if browser blocked popup window
-          window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+          const fallbackTab = window.open(checkoutUrl, '_blank');
+          if (fallbackTab) {
+            popupRef.current = fallbackTab;
+            const checkClosedInterval = setInterval(() => {
+              if (fallbackTab.closed) {
+                clearInterval(checkClosedInterval);
+                if (popupRef.current === fallbackTab) {
+                  popupRef.current = null;
+                }
+                if (!hasSucceededRef.current) {
+                  onClose?.();
+                  onModalClose?.();
+                }
+              }
+            }, 1000);
+          }
         } else {
           popupRef.current = popup;
           popup.focus();
@@ -138,9 +170,13 @@ export const CheckoutWidget: React.FC<CheckoutWidgetProps> = ({
           const checkClosedInterval = setInterval(() => {
             if (popup.closed) {
               clearInterval(checkClosedInterval);
-              popupRef.current = null;
-              onClose?.();
-              onModalClose?.();
+              if (popupRef.current === popup) {
+                popupRef.current = null;
+              }
+              if (!hasSucceededRef.current) {
+                onClose?.();
+                onModalClose?.();
+              }
             }
           }, 1000);
         }
@@ -182,6 +218,7 @@ export const CheckoutWidget: React.FC<CheckoutWidgetProps> = ({
   }, [onClose, onModalClose]);
 
   const handlePaymentSuccess = useCallback((event: unknown) => {
+    hasSucceededRef.current = true;
     if (popupRef.current && !popupRef.current.closed) {
       popupRef.current.close();
       popupRef.current = null;
