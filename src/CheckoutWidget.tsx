@@ -5,10 +5,7 @@ import { ErrorAlertIcon, ErrorCloseIcon } from './icons';
 import './CheckoutWidget.css';
 import { ensureStylesInjected } from './injectStyles';
 
-interface InternalWidgetProps extends CheckoutConfig {
-  autoOpen?: boolean;
-  onModalClose?: () => void;
-}
+export type CheckoutWidgetProps = CheckoutConfig;
 
 // Generate RFC4122 v4 UUID
 function generateIdempotencyKey(): string {
@@ -24,10 +21,10 @@ function generateIdempotencyKey(): string {
 
 const API_BASE_URL = 'https://sandbox-api.orki.io';
 
-export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
+export const CheckoutWidget: React.FC<CheckoutWidgetProps> = ({
   paylinkId,
   amount,
-  redirectUrl,
+  redirect_url,
   metadata,
   primaryColor = '#783FE4',
   buttonTextColor = '#FFFFFF',
@@ -80,8 +77,8 @@ export const CheckoutWidget: React.FC<InternalWidgetProps> = ({
         payload.amount = amount;
       }
 
-      if (redirectUrl && redirectUrl.trim() !== '') {
-        payload.redirect_url = redirectUrl;
+      if (redirect_url && redirect_url.trim() !== '') {
+        payload.redirect_url = redirect_url;
       }
 
       if (metadata && typeof metadata === 'object' && Object.keys(metadata).length > 0) {

@@ -1,13 +1,13 @@
 import { jsx as o, jsxs as p, Fragment as ee } from "react/jsx-runtime";
 import { createRoot as G } from "react-dom/client";
-import { useState as _, useEffect as b, useRef as Y, useCallback as D } from "react";
+import { useState as j, useEffect as b, useRef as Y, useCallback as D } from "react";
 const W = ({
   checkoutUrl: t,
   onClose: e,
   onSuccess: i,
   onError: n
 }) => {
-  const [k, M] = _(!0);
+  const [k, M] = j(!0);
   return b(() => {
     const d = (w) => {
       w.key === "Escape" && e();
@@ -394,7 +394,7 @@ const W = ({
   }
 }
 `;
-function j() {
+function _() {
   if (typeof document > "u") return;
   const t = "orki-checkout-widget-styles";
   if (!document.getElementById(t)) {
@@ -402,7 +402,7 @@ function j() {
     e.id = t, e.textContent = ie, document.head.appendChild(e);
   }
 }
-typeof document < "u" && j();
+typeof document < "u" && _();
 function g() {
   return typeof crypto < "u" && typeof crypto.randomUUID == "function" ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (t) => {
     const e = Math.random() * 16 | 0;
@@ -412,7 +412,7 @@ function g() {
 const re = "https://sandbox-api.orki.io", V = ({
   paylinkId: t,
   amount: e,
-  redirectUrl: i,
+  redirect_url: i,
   metadata: n,
   primaryColor: k = "#783FE4",
   buttonTextColor: M = "#FFFFFF",
@@ -425,11 +425,11 @@ const re = "https://sandbox-api.orki.io", V = ({
   onSuccess: C,
   onError: s,
   onClose: f,
-  autoOpen: A = !1,
+  autoOpen: U = !1,
   onModalClose: h
 }) => {
-  j();
-  const [B, v] = _(!1), [L, K] = _(null), [P, U] = _(null), x = Y(g()), l = Y(null);
+  _();
+  const [B, v] = j(!1), [L, K] = j(null), [P, A] = j(null), x = Y(g()), l = Y(null);
   b(() => {
     x.current = g();
   }, [t, e, n]);
@@ -440,7 +440,7 @@ const re = "https://sandbox-api.orki.io", V = ({
       console.error(c), s == null || s(c);
       return;
     }
-    v(!0), U(null), F == null || F();
+    v(!0), A(null), F == null || F();
     try {
       const c = `${re}/api/v1/charges`, r = {
         paylink_id: t
@@ -486,12 +486,12 @@ const re = "https://sandbox-api.orki.io", V = ({
     } catch (c) {
       console.error("[OrkiCheckout] Failed to create charge:", c);
       const r = c instanceof Error ? c.message : "Failed to start payment";
-      U(r), v(!1), s == null || s(c);
+      A(r), v(!1), s == null || s(c);
     }
   };
   b(() => {
-    A && T();
-  }, [A]);
+    U && T();
+  }, [U]);
   const E = D(() => {
     K(null), l.current && !l.current.closed && (l.current.close(), l.current = null), x.current = g(), f == null || f(), h == null || h();
   }, [f, h]), N = D((u) => {
@@ -503,7 +503,7 @@ const re = "https://sandbox-api.orki.io", V = ({
       !r || typeof r != "object" || (r.type === "ORKI_PAYMENT_SUCCESS" || r.event === "payment.success" ? N(r.payload || r) : r.type === "ORKI_PAYMENT_ERROR" || r.event === "payment.error" ? s == null || s(r.payload || r) : (r.type === "ORKI_PAYMENT_CANCEL" || r.type === "ORKI_CLOSE") && E());
     };
     return window.addEventListener("message", u), () => window.removeEventListener("message", u);
-  }, [N, E, s]), A)
+  }, [N, E, s]), U)
     return L ? /* @__PURE__ */ o(
       W,
       {
@@ -541,7 +541,7 @@ const re = "https://sandbox-api.orki.io", V = ({
         {
           type: "button",
           className: "orki-error-dismiss",
-          onClick: () => U(null),
+          onClick: () => A(null),
           "aria-label": "Dismiss error",
           children: /* @__PURE__ */ o(oe, { className: "orki-error-close-icon", "aria-hidden": "true" })
         }
@@ -559,7 +559,7 @@ const re = "https://sandbox-api.orki.io", V = ({
   ] });
 };
 function H(t, e) {
-  j();
+  _();
   const i = typeof t == "string" ? document.getElementById(t) : t;
   if (!i) {
     console.error("[OrkiCheckout] Mount target element not found:", t);
@@ -568,7 +568,7 @@ function H(t, e) {
   G(i).render(/* @__PURE__ */ o(V, { ...e }));
 }
 function ne(t) {
-  j();
+  _();
   const e = document.createElement("div");
   e.id = `orki-checkout-portal-${Date.now()}`, document.body.appendChild(e);
   const i = G(e), n = () => {

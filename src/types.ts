@@ -42,7 +42,7 @@ export interface CheckoutConfig {
   amount?: string;
 
   /** Redirect URL after payment completion on hosted checkout */
-  redirectUrl?: string;
+  redirect_url?: string;
 
   /** Custom merchant metadata attached to the charge */
   metadata?: CheckoutMetadata;
@@ -63,4 +63,8 @@ export interface CheckoutConfig {
   onSuccess?: (event: unknown) => void;
   onError?: (error: unknown) => void;
   onClose?: () => void;
+
+  /** Automation & Modal Lifecycle (Optional) */
+  autoOpen?: boolean;
+  onModalClose?: () => void;
 }

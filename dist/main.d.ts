@@ -1,4 +1,4 @@
-import CheckoutWidget from './CheckoutWidget';
+import CheckoutWidget, { CheckoutWidgetProps } from './CheckoutWidget';
 import CheckoutModal from './CheckoutModal';
 import { CheckoutConfig, DisplayMode, ChargeData, ChargeApiResponse } from './types';
 import './CheckoutWidget.css';
@@ -13,5 +13,5 @@ declare const orkiCheckout: typeof mount & {
     mount: typeof mount;
 };
 export { CheckoutWidget, CheckoutModal, orkiCheckout };
-export type { CheckoutConfig, DisplayMode, ChargeData, ChargeApiResponse };
+export type { CheckoutConfig, CheckoutWidgetProps, DisplayMode, ChargeData, ChargeApiResponse };
 export default orkiCheckout;
