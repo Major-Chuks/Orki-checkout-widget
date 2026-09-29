@@ -217,16 +217,32 @@ export const CheckoutWidget: React.FC<CheckoutWidgetProps> = ({
     onModalClose?.();
   }, [onClose, onModalClose]);
 
-  const handlePaymentSuccess = useCallback((event: unknown) => {
-    hasSucceededRef.current = true;
-    if (popupRef.current && !popupRef.current.closed) {
-      popupRef.current.close();
-      popupRef.current = null;
-    }
-    // Payment complete; rotate key for future orders
-    idempotencyKeyRef.current = generateIdempotencyKey();
-    onSuccess?.(event);
-  }, [onSuccess]);
+  const handlePaymentSuccess = useCallback(
+    (event: unknown) => {
+      hasSucceededRef.current = true;
+      if (popupRef.current && !popupRef.current.closed) {
+        popupRef.current.close();
+        popupRef.current = null;
+      }
+      // Payment complete; rotate key for future orders
+      idempotencyKeyRef.current = generateIdempotencyKey();
+      onSuccess?.(event);
+
+      const eventPayload = event as Record<string, unknown> | undefined;
+      const targetRedirectUrl =
+        redirect_url && redirect_url.trim() !== ''
+          ? redirect_url
+          : typeof eventPayload?.redirect_url === 'string' &&
+            eventPayload.redirect_url.trim() !== ''
+          ? eventPayload.redirect_url
+          : null;
+
+      if (targetRedirectUrl) {
+        window.location.href = targetRedirectUrl;
+      }
+    },
+    [onSuccess, redirect_url]
+  );
 
   // Listen for postMessage from hosted checkout page (supports popup postMessage)
   useEffect(() => {
